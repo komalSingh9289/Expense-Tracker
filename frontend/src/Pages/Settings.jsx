@@ -10,28 +10,6 @@ const Settings = () => {
         Settings
       </h2>
 
-      {/* Profile Settings */}
-      <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg mb-8">
-        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-          Profile Settings
-        </h3>
-        <div className="flex flex-col space-y-4">
-          <input
-            type="text"
-            placeholder="Name"
-            className="p-2 rounded text-sm bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300"
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            className="p-2 rounded text-sm bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300"
-          />
-          <button className="bg-blue-600 text-sm dark:bg-blue-500 p-2 rounded text-white">
-            Update Profile
-          </button>
-        </div>
-      </div>
-
       {/* Notification Settings */}
       <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg mb-8">
         <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">

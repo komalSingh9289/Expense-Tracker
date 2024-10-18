@@ -75,3 +75,20 @@ export const Login = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// Logout controller
+export const Logout = async (req, res) => {
+  try {
+    // Clear the cookie that stores the token
+    res.clearCookie("token", {
+      withCredentials: true,
+      httpOnly: false,
+    });
+
+    // Return success response
+    return res.status(200).json({ message: "User logged out successfully", success: true });
+  } catch (error) {
+    console.log("Logout side error", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

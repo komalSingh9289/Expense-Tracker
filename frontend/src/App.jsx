@@ -15,8 +15,6 @@ import Settings from "./Pages/Settings";
 import { ThemeProvider } from "../src/Context/ThemeContext";
 import Signup from "./Pages/Signup";
 import { AuthProvider } from "./Context/auth";
-import Logout from "./Pages/Logout";
-import Profile from "./Pages/Profile";
 
 
 const App = () => {
@@ -41,10 +39,6 @@ const App = () => {
         {
           path: "/login",
           element: <Login />,
-        },
-        {
-          path: "/logout",
-          element: <Logout />,
         },
         {
           path: "/signup",
@@ -76,10 +70,7 @@ const App = () => {
           path: "/dashboard/settings",
           element: <Settings />,
         },
-        {
-          path: "/dashboard/profile",
-          element: <Profile />,
-        },
+        
       ],
     },
   ]);

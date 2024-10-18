@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../Context/auth";
+import Logout from "../Logout.jsx";
 
 const Header = () => {
   const { user, logout } = useAuth(); // Assuming logout function is available
@@ -83,12 +84,7 @@ const Header = () => {
                       >
                         Dashboard
                       </NavLink>
-                      <NavLink
-                        to="/logout"
-                        className="block px-4 py-2 text-sm hover:bg-gray-200"
-                      >
-                        Logout
-                      </NavLink>
+                      <Logout />
                     </div>
                   )}
                 </div>

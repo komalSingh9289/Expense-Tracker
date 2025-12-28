@@ -5,7 +5,6 @@ import { useAuth } from "../../Context/auth";
 import Loading from "../Loading";
 import { UserProvider } from "../../Context/UserContext"; // Adjust the path as necessary
 
-import AIChatWidget from "../AIChatWidget";
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
@@ -30,7 +29,7 @@ const Dashboard = () => {
           <Outlet />
 
         </main>
-        <AIChatWidget />
+      
       </div>
     </UserProvider>
   );

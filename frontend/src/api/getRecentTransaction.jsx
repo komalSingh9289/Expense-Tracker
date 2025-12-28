@@ -1,11 +1,9 @@
-import axios from "axios";
-
-axios.defaults.withCredentials = true;
+import axios from "./axios";
 
 export const getRecentTransactionsByUserId = async () => {
   try {
     const response = await axios.get(
-      "http://localhost:5001/transactions/recent"
+      "/transactions/recent"
     );
     return response.data.transactions;
   } catch (error) {

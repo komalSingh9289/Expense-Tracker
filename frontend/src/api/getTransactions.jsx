@@ -1,12 +1,8 @@
-import axios from "axios";
-
-// Helper to get token (if needed, but cookies are httpOnly, so we rely on browser sending them)
-// Ensure axios sends credentials
-axios.defaults.withCredentials = true;
+import axios from "./axios";
 
 export const getTransactions = async () => {
   try {
-    const res = await axios.get("http://localhost:5001/transactions");
+    const res = await axios.get("/transactions");
     return res.data.transactions;
 
   } catch (error) {
@@ -15,7 +11,7 @@ export const getTransactions = async () => {
 };
 
 export const downloadTransactions = async () => {
-  return axios.get("http://localhost:5001/transactions/export", {
+  return axios.get("/transactions/export", {
     responseType: "blob",
   });
 };

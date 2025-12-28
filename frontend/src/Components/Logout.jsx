@@ -1,5 +1,5 @@
 import React from "react";
-import axios from "axios";
+import axios from "../api/axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Context/auth"; // Import the AuthContext
 
@@ -9,9 +9,7 @@ const Logout = () => {
 
   const handleClick = async () => {
     try {
-      const res = await axios.post("http://localhost:5001/logout", null, {
-        withCredentials: true,
-      });
+      const res = await axios.post("/logout", null);
 
       if (res.data.success) {
         setUser(null); // Clear the user state on successful logout

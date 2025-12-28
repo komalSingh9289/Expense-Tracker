@@ -1,9 +1,9 @@
-import axios from "axios";
+import axios from "./axios";
 
 export const addTransaction = async (transactionData) => {
   try {
     const response = await axios.post(
-      "http://localhost:5001/transactions",
+      "/transactions",
       transactionData
     );
     return response.data;

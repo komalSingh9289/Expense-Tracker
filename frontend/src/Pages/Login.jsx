@@ -3,7 +3,7 @@ import { FaGoogle } from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
+import axios from "../api/axios";
 import { useAuth } from "../Context/auth";
 
 const Login = () => {
@@ -38,9 +38,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5001/login", user, {
-        withCredentials: true,
-      });
+      const res = await axios.post("/login", user);
 
       const { success, message } = res.data;
 

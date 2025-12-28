@@ -3,7 +3,7 @@ import { FaGoogle } from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
+import axios from "../api/axios";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -36,9 +36,7 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5001/signup", userdata, {
-        withCredentials: true,
-      });
+      const res = await axios.post("/signup", userdata);
 
       const { success, message } = res.data;
 

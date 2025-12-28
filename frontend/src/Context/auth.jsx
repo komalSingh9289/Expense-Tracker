@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "../api/axios";
 import { createContext, useContext, useEffect, useState } from "react";
 
 export const AuthContext = createContext();
@@ -10,12 +10,10 @@ export const AuthProvider = ({ children }) => {
   const verifyUser = async () => {
     setLoading(true);
     try {
-      const res = await axios.post("http://localhost:5001", null, {
-        withCredentials: true,
-      });
-  
+      const res = await axios.post("/", null);
+
       console.log("API response:", res.data); // Log the API response
-  
+
       if (res.data.success) {
         setUser(res.data.user);
       } else {
@@ -28,7 +26,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     verifyUser(); // Call verifyUser when the component mounts
   }, []);

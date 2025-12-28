@@ -7,7 +7,7 @@ import { UserProvider } from "../../Context/UserContext"; // Adjust the path as 
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
-  const navigate = useNavigate(); // Initialize the navigate function
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -21,9 +21,13 @@ const Dashboard = () => {
 
   return (
     <UserProvider user={user}>
-      <div className="flex h-auto bg-gray-100 dark:bg-gray-900">
+      <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
         <SideBar />
-        <Outlet />
+        <main className="flex-1 overflow-x-hidden pt-16 md:pt-0">
+        
+            <Outlet />
+        
+        </main>
       </div>
     </UserProvider>
   );

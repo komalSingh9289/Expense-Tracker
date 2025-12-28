@@ -11,7 +11,10 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import getTransactions from "../api/getTransactions";
+import { getTransactions } from "../api/getTransactions";
+import Loading from "../Components/Loading";
+import { useUser } from "../Context/UserContext";
+import { Navigate } from "react-router-dom";
  // for date formatting
 
 ChartJS.register(
@@ -26,98 +29,95 @@ ChartJS.register(
 );
 
 const Reports = () => {
+  const user = useUser();
   const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [loading, setLoading] = useState(true);
+
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
 
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
         const res = await getTransactions();
-        setTransactions(res);
-        console.log("Fetched Transactions: ", res);
-      } catch (error) {
-        setError("Failed to load transactions. Please try again.");
-        console.error("Error fetching transactions:", error);
-      } finally {
+        setTransactions(res || []);
+      }catch (error) {
+  console.error("Error fetching transactions:", error);
+  setError("Failed to load reports. Please try again.");
+}
+ finally {
         setLoading(false);
       }
     };
 
-    fetchTransactions();
-  }, []);
+    if(user){
+        fetchTransactions();
+    }
+  }, [user]);
 
-  // Function to calculate expenses by title
   const calculateExpensesByTitle = () => {
     const titleData = {};
     transactions.forEach((transaction) => {
-      if (transaction.type === "expense") {
-        console.log( "all ",transactions);
-        
-        const title = transaction.categoryId.title; // Use title to categorize
-        if (!titleData[title]) {
-          titleData[title] = 0;
-        }
-        titleData[title] += transaction.amount; // Assuming you have amount field
-      }else{
-        console.log("error");
-        
+      if (transaction.type === "expense" && transaction.categoryId?.title) {
+        const title = transaction.categoryId.title;
+        if (!titleData[title]) titleData[title] = 0;
+        titleData[title] += transaction.amount;
       }
     });
     return titleData;
   };
 
-  // Function to prepare data for the Bar chart
   const prepareBarChartData = () => {
     const titleData = calculateExpensesByTitle();
-    const labels = Object.keys(titleData);
-    const data = Object.values(titleData);
-    console.log("yuot", data);
-    
-
     return {
-      labels,
+      labels: Object.keys(titleData),
       datasets: [
         {
           label: "Expenses by Category",
-          data,
-          backgroundColor: "rgba(255, 99, 132, 0.6)",
-          borderColor: "rgba(255, 99, 132, 1)",
-          borderWidth: 1,
+          data: Object.values(titleData),
+          backgroundColor: [
+            "rgba(59, 130, 246, 0.6)",
+            "rgba(99, 102, 241, 0.6)",
+            "rgba(139, 92, 246, 0.6)",
+            "rgba(236, 72, 153, 0.6)",
+            "rgba(244, 63, 94, 0.6)"
+          ],
+          borderColor: "transparent",
+          borderWidth: 0,
+          borderRadius: 8,
         },
       ],
     };
   };
 
-  // Function to prepare data for the Line chart
   const prepareLineChartData = () => {
     const dailySpending = {};
     transactions.forEach((transaction) => {
-      const date = new Date(transaction.date).toLocaleDateString('en-US', {
-        month: 'short', // e.g., "Oct"
-        day: '2-digit', // e.g., "18"
-        year: 'numeric', // e.g., "2024"
-      });
       if (transaction.type === "expense") {
-        if (!dailySpending[date]) {
-          dailySpending[date] = 0;
-        }
-        dailySpending[date] += transaction.amount; // Assuming you have amount field
+        const date = new Date(transaction.date).toLocaleDateString('en-US', {
+          month: 'short',
+          day: '2-digit',
+        });
+        if (!dailySpending[date]) dailySpending[date] = 0;
+        dailySpending[date] += transaction.amount;
       }
     });
 
-    const labels = Object.keys(dailySpending);
-    const data = Object.values(dailySpending);
-
     return {
-      labels,
+      labels: Object.keys(dailySpending),
       datasets: [
         {
           label: "Spending Over Time",
-          data,
-          fill: false,
-          borderColor: "rgba(75, 192, 192, 1)",
-          tension: 0.1,
+          data: Object.values(dailySpending),
+          fill: true,
+          backgroundColor: "rgba(59, 130, 246, 0.1)",
+          borderColor: "rgba(59, 130, 246, 1)",
+          tension: 0.4,
+          pointRadius: 4,
+          pointBackgroundColor: "rgba(59, 130, 246, 1)",
         },
       ],
     };
@@ -128,87 +128,59 @@ const Reports = () => {
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         display: true,
         position: "top",
+        labels: {
+          color: "gray",
+          font: { weight: 'bold', size: 12 }
+        }
       },
     },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: "gray" } },
+      y: { grid: { color: "rgba(128, 128, 128, 0.1)" }, ticks: { color: "gray" } }
+    }
   };
 
+  if (loading) return <Loading />;
+
   return (
-    <div className="p-6 bg-gray-100 dark:bg-gray-800 min-h-screen w-screen text-gray-800 dark:text-gray-200">
-      <h2 className="text-3xl text-center mt-6 font-bold mb-6 text-gray-900 dark:text-white">
-        Reports & Analytics
-      </h2>
+    <div className="space-y-8 animate-in fade-in duration-500 p-12">
+      <header>
+        <h2 className="text-3xl font-bold text-slate-800 dark:text-white tracking-tight">
+          Reports & Analytics
+        </h2>
+        <p className="text-slate-500 dark:text-slate-400 mt-1">
+          Visual insights into your financial habits and spending patterns.
+        </p>
+      </header>
 
       {error && (
-        <p className="text-red-500 text-center mb-6">{error}</p>
+        <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-500 text-center text-sm font-medium">
+          {error}
+        </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg">
-          <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-white dark:bg-slate-800/40 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 p-6 md:p-8 rounded-[2.5rem] shadow-xl transition-all duration-300">
+          <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-6">
             Expenses by Category
           </h3>
-          {!loading ? (
-            <Bar data={barChartData} options={options} />
-          ) : (
-            <div className="flex justify-center items-center">
-              <svg
-                className="animate-spin h-5 w-5 text-gray-800 dark:text-gray-200"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v8H4z"
-                ></path>
-              </svg>
-            </div>
-          )}
+          <div className="h-[300px]">
+             <Bar data={barChartData} options={options} />
+          </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg">
-          <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+        <div className="bg-white dark:bg-slate-800/40 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 p-6 md:p-8 rounded-[2.5rem] shadow-xl transition-all duration-300">
+          <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-6">
             Spending Over Time
           </h3>
-          {!loading ? (
+          <div className="h-[300px]">
             <Line data={lineChartData} options={options} />
-          ) : (
-            <div className="flex justify-center items-center">
-              <svg
-                className="animate-spin h-5 w-5 text-gray-800 dark:text-gray-200"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v8H4z"
-                ></path>
-              </svg>
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

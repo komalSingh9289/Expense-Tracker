@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const getRecentTransaction = async () => {
+axios.defaults.withCredentials = true;
+
+export const getRecentTransactionsByUserId = async () => {
   try {
     const response = await axios.get(
       "http://localhost:5001/transactions/recent"
@@ -11,4 +13,4 @@ const getRecentTransaction = async () => {
   }
 };
 
-export default getRecentTransaction;
+export default getRecentTransactionsByUserId;

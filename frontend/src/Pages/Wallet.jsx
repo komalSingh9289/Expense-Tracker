@@ -2,62 +2,92 @@ import React, { useEffect, useState } from "react";
 import AddIncome from "../Components/AddIncome";
 import AddExpense from "../Components/AddExpense";
 import RecentTransactions from "../Components/RecentTransactions.jsx";
-import getTransactions from "../api/getTransactions.jsx";
+import {getTransactions} from "../api/getTransactions.jsx";
+import Loading from "../Components/Loading.jsx";
+import { useUser } from "../Context/UserContext";
 
 const Wallet = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savings, setSavings] = useState(0);
+  const user = useUser();
 
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        const res = await getTransactions();
-        setTransactions(res);
-        console.log("Fetched Transactions: ", res); 
+useEffect(() => {
+  console.log("Wallet useEffect fired");
+  console.log("User:", user);
 
-        // Calculate total expenses and income
-        let expenses = 0;
-        let income = 0;
+  if (!user) {
+    setLoading(false);
+    return;
+  }
 
-        res.forEach((transaction) => {
-          if (transaction.type === "expense") {
-            expenses += transaction.amount;
-          } else if (transaction.type === "income") {
-            income += transaction.amount;
-          }
-        });
+  const fetchTransactions = async () => {
+    try {
+      const res = await getTransactions();
+      console.log("API RESPONSE:", res);
 
-        setSavings(income - expenses);  // Savings = Income - Expenses
-      } catch (error) {
-        console.error("Error fetching transactions:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      const data = res || [];
+      console.log("Transactions:", data);
 
-    fetchTransactions();
-  }, []);
+      setTransactions(res);
+
+      let income = 0;
+      let expenses = 0;
+
+      data.forEach((t) => {
+        const amt = Number(t.amount) || 0;
+        if (t.type === "income") income += amt;
+        if (t.type === "expense") expenses += amt;
+      });
+
+      const totalSavings = income - expenses;
+      console.log("Savings:", totalSavings);
+
+      setSavings(totalSavings);
+    } catch (err) {
+      console.error("Fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchTransactions();
+}, [user]);
+
+
+  if (loading) return <Loading />;
 
   return (
-    <div className="flex flex-col h-auto w-screen bg-gray-100 dark:bg-gray-800 p-6">
-      {/* Header */}
-      <header className="mb-6">
-        <h2 className="text-gray-800 text-center dark:text-white text-2xl font-bold mt-5">
-          My Wallet
-        </h2>
+    <div className="space-y-8 animate-in fade-in duration-500 p-12">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-bold text-slate-800 dark:text-white tracking-tight">
+            My Wallet
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">
+            Manage your funds and add new transactions.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <AddIncome />
+          <AddExpense />
+        </div>
       </header>
-      <div className="flex justify-between items-center mb-6">
-        <AddIncome />
-        <AddExpense />
-      </div>
 
-      {/* Wallet Balance */}
-      <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
-          Wallet Balance
-        </h3>
-        <p className="text-sm text-green-500">{savings.toFixed(2)} /-</p>
+      <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-8 md:p-12 border border-blue-500/20 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-white/20 transition-all duration-700"></div>
+        <div className="relative z-10">
+          <h3 className="text-blue-100/80 font-medium mb-2 uppercase tracking-widest text-xs">
+            Current Balance
+          </h3>
+          <div className="flex items-baseline gap-2">
+            <span className="text-4xl md:text-6xl font-bold text-white tracking-tighter">
+              ₹{savings.toLocaleString()}
+            </span>
+            <span className="text-xl text-blue-200 font-medium">INR</span>
+          </div>
+         
+        </div>
       </div>
 
      <RecentTransactions />

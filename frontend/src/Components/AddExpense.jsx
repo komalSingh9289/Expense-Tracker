@@ -10,7 +10,6 @@ const AddExpense = () => {
   const user = useUser();
   const [isModalOpen, setModalOpen] = useState(false);
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
   const [file, setFile] = useState(null); // State to hold the uploaded file
   const type = "Expense";
 
@@ -52,31 +51,38 @@ const AddExpense = () => {
     setFile(selectedFile); // Set the file to state
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    // Create a new FormData object for file upload
+  try {
+    if (!user?._id) {
+      toast.error("User not logged in");
+      return;
+    }
+
     const formData = new FormData();
-    formData.append("userId", expenseData.userId);
+    formData.append("userId", user._id);
     formData.append("categoryId", expenseData.categoryId);
-    formData.append("type", expenseData.type);
+    formData.append("type", "expense");
     formData.append("description", expenseData.description);
     formData.append("amount", expenseData.amount);
     formData.append("date", expenseData.date);
+
     if (file) {
-      formData.append("file", file); // Append the file to formData
+      formData.append("file", file);
     }
 
     const res = await addTransaction(formData);
 
-    if (res && res.data && res.data.success) {
-      toast.success(res.data.message);
+    if (res?.success) {
+      toast.success(res.message);
+      setModalOpen(false);
     } else {
-      toast.warning(res.data.message || "Something went wrong");
+      toast.warning(res?.message || "Failed to add expense");
     }
 
     setExpenseData({
-      userId: user._id || '',
+      userId: user._id,
       categoryId: "",
       type: "expense",
       description: "",
@@ -84,89 +90,101 @@ const AddExpense = () => {
       date: "",
     });
 
-    setFile(null); // Clear the file after submission
-    setModalOpen(!isModalOpen);
-  };
+    setFile(null);
+  } catch (error) {
+    console.error("Add expense error:", error);
+    toast.error("Server error. Please try again.");
+  }
+};
+
 
   return (
-    <div className="p-6">
+    <div className="p-4">
       <button
         onClick={() => setModalOpen(true)}
-        className="bg-red-600 text-white text-xs px-4 py-2 rounded-lg hover:bg-red-700 flex items-center"
+        className="flex items-center gap-2 px-6 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-2xl shadow-lg shadow-rose-500/20 active:scale-95 transition-all duration-200"
       >
-        <FaMoneyBillWave className="mr-2" />
-        Add Expense
+        <FaMoneyBillWave />
+        <span>Add Expense</span>
       </button>
 
       <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
-        <h2 className="text-lg font-bold mb-2">Add Expense</h2>
-        <form className="space-y-2" onSubmit={handleSubmit}>
-          <div>
-            <select
-              value={expenseData.categoryId}
-              name="categoryId"
-              onChange={handleChange}
-              className="w-full text-xs p-2 border border-gray-300 rounded-lg"
-              required
+        <div className="p-2">
+          <h2 className="text-2xl font-bold mb-6 text-slate-800 dark:text-white tracking-tight">Add Expense</h2>
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1 ml-1">Category</label>
+              <select
+                value={expenseData.categoryId}
+                name="categoryId"
+                onChange={handleChange}
+                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-slate-800 dark:text-white focus:ring-2 focus:ring-rose-500/50 outline-none transition-all font-medium"
+                required
+              >
+                <option value="">Select a category</option>
+                {categories.map((category) => (
+                  <option key={category._id} value={category._id}>
+                    {category.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1 ml-1">Description</label>
+              <input
+                type="text"
+                name="description"
+                value={expenseData.description}
+                onChange={handleChange}
+                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-slate-800 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-rose-500/50 outline-none transition-all font-medium"
+                placeholder="What was this for?"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1 ml-1">Amount</label>
+                <input
+                  type="number"
+                  name="amount"
+                  value={expenseData.amount}
+                  onChange={handleChange}
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-slate-800 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-rose-500/50 outline-none transition-all font-medium font-bold"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1 ml-1">Date</label>
+                <input
+                  type="date"
+                  name="date"
+                  value={expenseData.date}
+                  onChange={handleChange}
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-slate-800 dark:text-white focus:ring-2 focus:ring-rose-500/50 outline-none transition-all font-medium"
+                  required
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1 ml-1">Receipt (Optional)</label>
+              <input
+                type="file"
+                name="file"
+                accept="image/*,application/pdf"
+                onChange={handleFileChange}
+                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-slate-500 text-sm focus:ring-2 focus:ring-rose-500/50 outline-none transition-all"
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full py-4 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-2xl shadow-xl shadow-rose-500/20 active:scale-[0.98] transition-all duration-200 mt-4"
             >
-              <option value="">Select a category</option>
-              {categories.map((category) => (
-                <option key={category._id} value={category._id}>
-                  {category.title}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <input
-              type="text"
-              name="description"
-              value={expenseData.description}
-              onChange={handleChange}
-              className="w-full text-xs p-2 border border-gray-300 rounded-lg"
-              placeholder="Enter Description"
-            />
-          </div>
-          <div>
-            <input
-              type="number"
-              name="amount"
-              value={expenseData.amount}
-              onChange={handleChange}
-              className="w-full  text-xs p-2 border border-gray-300 rounded-lg"
-              placeholder="Enter amount"
-            />
-          </div>
-          <div>
-            <input
-              type="date"
-              name="date"
-              value={expenseData.date}
-              onChange={handleChange}
-              className="w-full text-xs p-2 border border-gray-300 rounded-lg"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-700">
-              Upload Supporting Document (Bills/Invoices)
-            </label>
-            <input
-              type="file"
-              name="file"
-              accept="image/*,application/pdf"
-              onChange={handleFileChange}
-              className="w-full text-xs p-2 border border-gray-300 rounded-lg"
-            />
-          </div>
-          <button
-            type="submit"
-            className="bg-red-600 text-xs text-white px-4 py-2 rounded hover:bg-red-700 "
-          >
-            Add Expense
-          </button>
-        </form>
+              Confirm Expense
+            </button>
+          </form>
+        </div>
       </Modal>
-      <ToastContainer />
+      <ToastContainer position="bottom-right" theme="dark" />
     </div>
   );
 };

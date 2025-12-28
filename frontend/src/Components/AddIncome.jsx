@@ -49,12 +49,13 @@ const AddIncome = () => {
   const handleSubmit = async(e) => {
     e.preventDefault();
    // console.log(expenseData);
-    const res =  await addTransaction(incomeData);
-
-    if(res.success){
+    const res = await addTransaction(incomeData);
+    
+    if (res?.success) {
       toast.success(res.message);
-    }else{
-      toast.warning(res.message);
+      setModalOpen(false);
+    } else {
+      toast.warning(res?.message || "Failed to add income");
     }
 
     setIncomeData({
@@ -73,76 +74,82 @@ const AddIncome = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-4">
       <button
         onClick={() => setModalOpen(true)}
-        className="bg-blue-600 text-xs text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center"
+        className="flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-2xl shadow-lg shadow-emerald-500/20 active:scale-95 transition-all duration-200"
       >
-        <FaMoneyBillWave className="mr-2" />
-        Add Income
+        <FaMoneyBillWave />
+        <span>Add Income</span>
       </button>
 
       <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
-        <h2 className="text-lg font-bold mb-4">Add Income</h2>
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div>
-           
-            <select
-              value={incomeData.categoryId}
-              name="categoryId"
-              onChange={handleChange}
-              className="w-full text-xs p-2 border border-gray-300 rounded-lg"
-              required
+        <div className="p-2">
+          <h2 className="text-2xl font-bold mb-6 text-slate-800 dark:text-white tracking-tight">Add Income</h2>
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1 ml-1">Category</label>
+              <select
+                value={incomeData.categoryId}
+                name="categoryId"
+                onChange={handleChange}
+                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all font-medium"
+                required
+              >
+                <option value="">Select a category</option>
+                {categories.map((category) => (
+                  <option key={category._id} value={category._id}>
+                    {category.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1 ml-1">Description</label>
+              <input
+                type="text"
+                name="description"
+                value={incomeData.description}
+                onChange={handleChange}
+                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-slate-800 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all font-medium"
+                placeholder="Where did this come from?"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1 ml-1">Amount</label>
+                <input
+                  type="number"
+                  name="amount"
+                  value={incomeData.amount}
+                  onChange={handleChange}
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-slate-800 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all font-medium font-bold"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1 ml-1">Date</label>
+                <input
+                  type="date"
+                  name="date"
+                  value={incomeData.date}
+                  onChange={handleChange}
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all font-medium"
+                  required
+                />
+              </div>
+            </div>
+            <button
+              type="submit"
+              className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-2xl shadow-xl shadow-emerald-500/20 active:scale-[0.98] transition-all duration-200 mt-4"
             >
-              <option value="">Select a category</option>
-              {categories.map((category) => (
-                <option key={category._id} value={category._id}>
-                  {category.title}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            
-            <input
-              type="text"
-              name="description"
-              value={incomeData.description}
-              onChange={handleChange}
-              className="w-full text-xs p-2 border border-gray-300 rounded-lg"
-              placeholder="Enter Description"
-            />
-          </div>
-          <div>
-            
-            <input
-              type="number"
-              name="amount"
-              value={incomeData.amount}
-              onChange={handleChange}
-              className="w-full p-2 text-xs border border-gray-300 rounded-lg"
-              placeholder="Enter amount"
-            />
-          </div>
-          <div>
-           
-            <input
-              type="date"
-              name="date"
-              value={incomeData.date}
-              onChange={handleChange}
-              className="w-full p-2 text-xs border border-gray-300 rounded-lg"
-            />
-          </div>
-          <button
-            type="submit"
-            className="bg-red-600 text-white text-xs px-4 py-2 rounded hover:bg-red-700 "
-          >
-            Add Income
-          </button>
-        </form>
+              Confirm Income
+            </button>
+          </form>
+        </div>
       </Modal>
-      <ToastContainer />
+      <ToastContainer position="bottom-right" theme="dark" />
     </div>
   );
 };

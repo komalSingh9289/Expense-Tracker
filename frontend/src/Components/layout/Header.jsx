@@ -4,7 +4,7 @@ import { useAuth } from "../../Context/auth";
 import Logout from "../Logout.jsx";
 
 const Header = () => {
-  const { user, logout } = useAuth(); // Assuming logout function is available
+  const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
@@ -18,50 +18,55 @@ const Header = () => {
   };
 
   const handleLogout = () => {
-    logout(); // Call the logout function
-    navigate("/login"); // Redirect to login page
+    logout();
+    navigate("/login");
   };
 
   return (
-    <nav className="bg-gray-800 text-white">
+    <nav className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md sticky top-0 z-50 text-slate-800 dark:text-white border-b border-slate-200 dark:border-slate-800 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <NavLink to="/" className="text-2xl font-bold">
+            <NavLink to="/" className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
               ExpenseMate
             </NavLink>
           </div>
           <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
+            <div className="ml-10 flex items-baseline space-x-6">
               <NavLink
                 to="/"
-                className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700"
+                className={({ isActive }) => 
+                  `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'}`
+                }
               >
                 Home
               </NavLink>
               <NavLink
                 to="/about"
-                className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700"
+                className={({ isActive }) => 
+                  `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'}`
+                }
               >
                 About
               </NavLink>
               <NavLink
                 to="/contact"
-                className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700"
+                className={({ isActive }) => 
+                  `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${isActive ? 'text-blue-400' : 'text-gray-300 hover:text-white hover:bg-slate-800'}`
+                }
               >
                 Contact
               </NavLink>
 
-              {/* Conditional Rendering for Dashboard and Login */}
               {user ? (
                 <div className="relative">
                   <button
                     onClick={toggleDropdown}
-                    className="flex items-center px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700"
+                    className="flex items-center px-4 py-2 rounded-full text-sm font-medium bg-slate-800 hover:bg-slate-700 transition-all duration-200 border border-slate-700"
                   >
-                    {user.name} {/* Display username */}
+                    <span className="mr-2">{user.name}</span>
                     <svg
-                      className="w-4 h-4 ml-1"
+                      className={`w-4 h-4 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`}
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
@@ -77,13 +82,15 @@ const Header = () => {
                   </button>
 
                   {dropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-md shadow-lg">
+                    <div className="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl py-2 overflow-hidden animate-in fade-in slide-in-from-top-2">
                       <NavLink
                         to="/dashboard"
-                        className="block px-4 py-2 text-sm hover:bg-gray-200"
+                        onClick={() => setDropdownOpen(false)}
+                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white"
                       >
                         Dashboard
                       </NavLink>
+                      <div className="h-px bg-slate-700 my-1"></div>
                       <Logout />
                     </div>
                   )}
@@ -91,7 +98,7 @@ const Header = () => {
               ) : (
                 <NavLink
                   to="/login"
-                  className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700"
+                  className="px-6 py-2 rounded-full text-sm font-medium bg-blue-600 hover:bg-blue-500 transition-all duration-200 shadow-lg shadow-blue-900/20"
                 >
                   Login
                 </NavLink>
@@ -102,40 +109,16 @@ const Header = () => {
             <button
               onClick={toggleNavbar}
               type="button"
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:bg-gray-700 focus:text-white"
+              className="inline-flex items-center justify-center p-2 rounded-lg text-gray-400 hover:text-white hover:bg-slate-800 focus:outline-none transition-colors"
             >
               <span className="sr-only">Open main menu</span>
               {isOpen ? (
-                <svg
-                  className="h-6 w-6"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               ) : (
-                <svg
-                  className="h-6 w-6"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
+                <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               )}
             </button>
@@ -146,41 +129,45 @@ const Header = () => {
       {/* Mobile Menu */}
       <div
         className={`${
-          isOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
-        } overflow-hidden transition-all duration-500 ease-in-out md:hidden`}
+          isOpen ? "max-h-96 opacity-100 py-4" : "max-h-0 opacity-0 py-0"
+        } overflow-hidden transition-all duration-300 ease-in-out md:hidden bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800`}
       >
-        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+        <div className="px-4 space-y-2">
           <NavLink
             to="/"
-            className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700"
+            onClick={() => setIsOpen(false)}
+            className="block px-3 py-2 rounded-lg text-base font-medium text-gray-300 hover:text-white hover:bg-slate-800"
           >
             Home
           </NavLink>
           <NavLink
             to="/about"
-            className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700"
+            onClick={() => setIsOpen(false)}
+            className="block px-3 py-2 rounded-lg text-base font-medium text-gray-300 hover:text-white hover:bg-slate-800"
           >
             About
           </NavLink>
           <NavLink
             to="/contact"
-            className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700"
+            onClick={() => setIsOpen(false)}
+            className="block px-3 py-2 rounded-lg text-base font-medium text-gray-300 hover:text-white hover:bg-slate-800"
           >
             Contact
           </NavLink>
 
-          {/* Mobile Dashboard and Login Links */}
           {user ? (
             <NavLink
               to="/dashboard"
-              className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700"
+              onClick={() => setIsOpen(false)}
+              className="block px-3 py-2 rounded-lg text-base font-medium text-blue-400 hover:bg-slate-800"
             >
               Dashboard
             </NavLink>
           ) : (
             <NavLink
               to="/login"
-              className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700"
+              onClick={() => setIsOpen(false)}
+              className="block px-3 py-2 rounded-lg text-base font-medium bg-blue-600 text-white text-center"
             >
               Login
             </NavLink>

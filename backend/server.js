@@ -14,7 +14,9 @@ const app = express();
 const PORT = process.env.PORT;
 
 const corsOptions = {
-  origin: ["http://localhost:3002", "http://localhost:5173", "http://localhost:3000"],
+  origin: ["http://localhost:3002", "http://localhost:5173", "http://localhost:3000", 
+    "https://expense-tracker-drab-sigma-49.vercel.app/"
+  ],
   methods:"GET,POST,PUT, PATCH, DELETE, HEAD",
   credentials:true, 
 }
@@ -33,5 +35,5 @@ app.use("/api/ai", aiRoutes);
 
 app.listen(PORT, () => {
     connectDb();
-  console.log("Sever Started At:", PORT);
+ 
 });

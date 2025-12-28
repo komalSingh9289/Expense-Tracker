@@ -21,6 +21,8 @@ export const SignUp = async (req, res) => {
     res.cookie("token", token, {
       withCredentials: true,
       httpOnly: false,
+      sameSite: "none",
+      secure: true,
     });
 
     // Return success response
@@ -64,6 +66,8 @@ export const Login = async (req, res) => {
     res.cookie("token", token, {
       withCredentials: true,
       httpOnly: false,
+      sameSite: "none",
+      secure: true,
     });
 
     // Return success response
@@ -83,6 +87,8 @@ export const Logout = async (req, res) => {
     res.clearCookie("token", {
       withCredentials: true,
       httpOnly: false,
+      sameSite: "none",
+      secure: true,
     });
 
     // Return success response

@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import AuthRoute from "./routers/auth.routes.js"
 import CategoryRoute from "./routers/categories.routes.js";
 import TransactionRouter from "./routers/transaction.routes.js";
+import aiRoutes from "./routers/aiChat.routes.js";
 
 dotenv.config();
 
@@ -13,7 +14,7 @@ const app = express();
 const PORT = process.env.PORT;
 
 const corsOptions = {
-  origin: "http://localhost:3002",
+  origin: ["http://localhost:3002", "http://localhost:5173", "http://localhost:3000"],
   methods:"GET,POST,PUT, PATCH, DELETE, HEAD",
   credentials:true, 
 }
@@ -28,6 +29,7 @@ app.use(cookieParser());
 app.use("/", AuthRoute);
 app.use("/categories", CategoryRoute );
 app.use("/transactions", TransactionRouter);
+app.use("/api/ai", aiRoutes);
 
 app.listen(PORT, () => {
     connectDb();

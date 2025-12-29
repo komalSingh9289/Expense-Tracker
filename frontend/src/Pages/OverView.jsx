@@ -3,8 +3,9 @@ import { FaWallet, FaPiggyBank, FaCoins } from "react-icons/fa";
 import { useUser } from "../Context/UserContext";
 import RecentTransactions from "../Components/RecentTransactions";
 import ExpensePieChart from "../Components/ExpensePieChart";
-import {getTransactions} from "../api/getTransactions";
+import { getTransactions } from "../api/getTransactions";
 import Loading from "../Components/Loading";
+import Calendar from "../Components/Calendar";
 import { Navigate } from "react-router-dom";
 
 const OverView = () => {
@@ -23,10 +24,10 @@ const OverView = () => {
     const fetchTransactions = async () => {
       try {
         const res = await getTransactions();
-        const data = res || []; 
-        
+        const data = res || [];
+
         setTransactions(data);
-        
+
         let expenses = 0;
         let income = 0;
         data.forEach((transaction) => {
@@ -48,7 +49,7 @@ const OverView = () => {
     };
 
     if (user) {
-        fetchTransactions();
+      fetchTransactions();
     }
   }, [user]);
 
@@ -106,12 +107,12 @@ const OverView = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {stats.map((stat, index) => (
-          <div 
+          <div
             key={index}
             className="group relative overflow-hidden bg-white dark:bg-slate-800/40 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 p-6 rounded-3xl transition-all duration-300 hover:border-blue-500/30 hover:shadow-xl dark:hover:bg-slate-800/60"
           >
             <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${stat.color} opacity-5 dark:opacity-10 blur-3xl group-hover:opacity-10 dark:group-hover:opacity-20 transition-opacity`}></div>
-            
+
             <div className="relative flex items-center justify-between mb-4">
               <div className={`p-3 rounded-2xl bg-gradient-to-br ${stat.color} text-white shadow-lg`}>
                 {stat.icon}
@@ -133,7 +134,7 @@ const OverView = () => {
                 <span className="text-slate-600 dark:text-slate-300">{Math.round(stat.progress)}%</span>
               </div>
               <div className="h-2 w-full bg-slate-100 dark:bg-slate-700/50 rounded-full overflow-hidden">
-                <div 
+                <div
                   className={`h-full ${stat.progressColor} rounded-full transition-all duration-1000 ease-out`}
                   style={{ width: `${stat.progress}%` }}
                 ></div>
@@ -144,10 +145,11 @@ const OverView = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-8">
           <RecentTransactions />
+          <Calendar transactions={transactions} />
         </div>
-        <div className="h-full">
+        <div className="h-[80vh]">
           <ExpensePieChart />
         </div>
       </div>

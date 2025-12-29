@@ -240,5 +240,53 @@ export const removeManyTransactions = async (req, res) => {
   }
 }
 
+// Get transactions by specific date
+export const getTransactionsByDate = async (req, res) => {
+  try {
+    const { date } = req.body;
+    const userId = req.user._id;
+
+    if (!date) {
+      return res.status(400).json({ success: false, message: "Date is required" });
+    }
+
+    console.log("Received Date Query:", date);
+
+    // Parse YYYY-MM-DD
+    const [year, month, day] = date.split('-').map(Number);
+    // Create start and end using local server time assumption for now (since user is local)
+    // Or better: construct UTC range if we want strictness, but for a simple app matching 
+    // "what the user sees" (local) to "what the database has" (timestamps), 
+    // we need to cover the whole 24h of that day.
+
+    // Construct Date objects for the start and end of that specific calendar day
+    // We treat the input date as the "day" we want to find transactions for.
+    // If date is "2024-12-29", we want 2024-12-29 00:00:00 to 2024-12-29 23:59:59.999
+
+    // Using a simplistic approach:
+    const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
+    const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
+
+    console.log("Query Range:", startOfDay, "to", endOfDay);
+
+    const transactions = await Transaction.find({
+      userId,
+      date: {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      },
+    }).populate("categoryId", "title").sort({ date: -1 });
+
+    console.log("Found transactions:", transactions.length);
+
+    const totalAmount = transactions.reduce((acc, curr) => acc + curr.amount, 0);
+
+    res.status(200).json({ success: true, transactions, totalAmount });
+  } catch (error) {
+    console.error("Error fetching transactions by date:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 
 

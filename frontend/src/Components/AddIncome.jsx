@@ -5,6 +5,7 @@ import  {toast,  ToastContainer } from "react-toastify";
 import { getCategories } from "../api/getCategories";
 import { useUser } from "../Context/UserContext";
 import { addTransaction } from "../api/addTransaction";
+import { useNavigate } from "react-router-dom";
 
 const AddIncome = () => {
   const user = useUser();
@@ -12,6 +13,7 @@ const AddIncome = () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const type = "Income";
+  const navigate = useNavigate();
 
   const [incomeData, setIncomeData] = useState({
     userId: user._id || '',
@@ -68,6 +70,7 @@ const AddIncome = () => {
     })
 
     setModalOpen(!isModalOpen);
+    navigate('/dashboard/transactions');
 
   
 

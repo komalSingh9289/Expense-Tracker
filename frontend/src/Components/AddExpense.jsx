@@ -5,6 +5,7 @@ import { toast, ToastContainer } from "react-toastify";
 import { getCategories } from "../api/getCategories";
 import { useUser } from "../Context/UserContext";
 import { addTransaction } from "../api/addTransaction";
+import { useNavigate } from "react-router-dom";
 
 const AddExpense = () => {
   const user = useUser();
@@ -12,6 +13,7 @@ const AddExpense = () => {
   const [categories, setCategories] = useState([]);
   const [file, setFile] = useState(null); // State to hold the uploaded file
   const type = "Expense";
+  const navigate = useNavigate();
 
   const [expenseData, setExpenseData] = useState({
     userId: user._id || '',
@@ -91,6 +93,7 @@ const handleSubmit = async (e) => {
     });
 
     setFile(null);
+    navigate('/dashboard/transactions');
   } catch (error) {
     console.error("Add expense error:", error);
     toast.error("Server error. Please try again.");

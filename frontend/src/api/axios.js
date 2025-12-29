@@ -1,7 +1,11 @@
 import axios from 'axios';
 
+// const instance = axios.create({
+//   baseURL: 'https://expense-tracker-k5zz.onrender.com',
+//   withCredentials: true,
+// });
 const instance = axios.create({
-  baseURL: 'https://expense-tracker-k5zz.onrender.com',
+  baseURL: 'http://localhost:5001',
   withCredentials: true,
 });
 

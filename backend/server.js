@@ -15,8 +15,6 @@ const PORT = process.env.PORT;
 /* ✅ FIXED CORS */
 const allowedOrigins = [
   "http://localhost:3002",
-  "http://localhost:5173",
-  "http://localhost:3000",
   "https://expense-tracker-drab-sigma-49.vercel.app" // ❌ no slash
 ];
 

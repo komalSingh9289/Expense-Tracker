@@ -23,7 +23,7 @@ const Header = () => {
   };
 
   return (
-    <nav className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md sticky top-0 z-50 text-slate-800 dark:text-white border-b border-slate-200 dark:border-slate-800 transition-colors duration-300">
+    <nav className="bg-white/95 backdrop-blur-md sticky top-0 z-50 text-slate-800 border-b border-slate-200 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
@@ -36,7 +36,7 @@ const Header = () => {
               <NavLink
                 to="/"
                 className={({ isActive }) => 
-                  `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'}`
+                  `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${isActive ? 'text-blue-600' : 'text-slate-600 hover:text-blue-600 hover:bg-slate-100'}`
                 }
               >
                 Home
@@ -44,7 +44,7 @@ const Header = () => {
               <NavLink
                 to="/about"
                 className={({ isActive }) => 
-                  `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'}`
+                  `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${isActive ? 'text-blue-600' : 'text-slate-600 hover:text-blue-600 hover:bg-slate-100'}`
                 }
               >
                 About
@@ -130,7 +130,7 @@ const Header = () => {
       <div
         className={`${
           isOpen ? "max-h-96 opacity-100 py-4" : "max-h-0 opacity-0 py-0"
-        } overflow-hidden transition-all duration-300 ease-in-out md:hidden bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800`}
+        } overflow-hidden transition-all duration-300 ease-in-out md:hidden bg-white border-t border-slate-200`}
       >
         <div className="px-4 space-y-2">
           <NavLink

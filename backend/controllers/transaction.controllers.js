@@ -101,8 +101,6 @@ export const getTransactions = async (req, res) => {
 
 
 
-// ... (existing code)
-
 export const downloadTransactions = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -110,68 +108,137 @@ export const downloadTransactions = async (req, res) => {
       .populate("categoryId", "title")
       .sort({ date: -1 });
 
-    const doc = new PDFDocument();
-    
-    // Set response headers
+    const doc = new PDFDocument({ size: "A4", margin: 50 });
+
+    // Headers must be sent before piping
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", "attachment; filename=transactions.pdf");
+    res.flushHeaders(); // ensures headers are sent immediately
 
-    // Pipe PDF to response
     doc.pipe(res);
 
     // Title
     doc.fontSize(20).text("Transaction Report", { align: "center" });
     doc.moveDown();
 
-    // Table Headers
+    // Table headers
     const tableTop = 150;
-    const dateX = 50;
-    const typeX = 150;
-    const categoryX = 250;
-    const descX = 350; // Increased spacing
-    const amountX = 500;
+    const dateX = 50, typeX = 150, categoryX = 250, descX = 350, amountX = 500;
 
-    doc
-      .fontSize(12)
+    doc.fontSize(12)
       .text("Date", dateX, tableTop)
       .text("Type", typeX, tableTop)
       .text("Category", categoryX, tableTop)
       .text("Description", descX, tableTop)
       .text("Amount", amountX, tableTop);
 
-    doc
-      .moveTo(50, tableTop + 15)
-      .lineTo(550, tableTop + 15)
-      .stroke();
+    doc.moveTo(50, tableTop + 15).lineTo(550, tableTop + 15).stroke();
 
     let yPosition = tableTop + 25;
 
-    transactions.forEach((tx) => {
-      // Check for page break
+    transactions.forEach(tx => {
       if (yPosition > 700) {
         doc.addPage();
         yPosition = 50;
-        
-        // Helper to redraw headers on new page? (Optional, keeping simple for now)
       }
 
-      doc
-          .fontSize(10)
-          .text(new Date(tx.date).toLocaleDateString(), dateX, yPosition)
-          .text(tx.type, typeX, yPosition)
-          .text(tx.categoryId?.title || "Uncategorized", categoryX, yPosition)
-          .text(tx.description || "", descX, yPosition, { width: 140, ellipsis: true }) // Limit width for description
-          .text(tx.amount.toString(), amountX, yPosition);
+      doc.fontSize(10)
+        .text(new Date(tx.date).toLocaleDateString(), dateX, yPosition)
+        .text(tx.type, typeX, yPosition)
+        .text(tx.categoryId?.title || "Uncategorized", categoryX, yPosition)
+        .text(tx.description || "", descX, yPosition, { width: 140, ellipsis: true })
+        .text(tx.amount.toString(), amountX, yPosition);
 
       yPosition += 20;
     });
 
     doc.end();
 
+    // Do NOT send any res.json() after piping
   } catch (error) {
     console.error("PDF export error:", error);
-    res.status(500).json({ message: "Failed to export transactions" });
+
+    // Only send error if headers not sent
+    if (!res.headersSent) {
+      res.status(500).json({ message: "Failed to export transactions" });
+    }
   }
 };
+
+
+// update transaction
+export const updateTransactions = async (req, res) => {
+  upload(req, res, async (err) => {
+    if (err) {
+      return res.status(400).json({
+        success: false,
+        message: err.message || err,
+      });
+    }
+
+    try {
+      const { id } = req.params;
+      const { categoryId, amount, type, description, date } = req.body;
+
+      let updateData = {
+        categoryId,
+        amount,
+        type,
+        description,
+        date
+      };
+
+      if (req.file) {
+        const result = await uploadToCloudinary(
+          req.file.buffer,
+          "expenseMate/receipts"
+        );
+        updateData.file = result.secure_url;
+      } else {
+        console.log("No file received in update.");
+      }
+
+      const transaction = await Transaction.findByIdAndUpdate(id, updateData, { new: true }).populate("categoryId", "title");
+      res.status(200).json({ success: true, message: "Transaction updated successfully", transaction });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ success: false, message: "Transaction updated failed", error });
+    }
+  });
+}
+
+// remove transaction
+export const removeTransactions = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(id);
+    const transaction = await Transaction.findByIdAndDelete(id);
+    res.status(200).json({ success: true, message: "Transaction removed successfully", transaction });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: "Transaction removed failed", error });
+  }
+}
+
+// remove many transactions
+export const removeManyTransactions = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ success: false, message: "No transaction IDs provided" });
+    }
+
+    const result = await Transaction.deleteMany({
+      _id: { $in: ids },
+      userId: req.user._id // Ensure user can only delete their own transactions
+    });
+
+    res.status(200).json({ success: true, message: "Transactions deleted successfully", count: result.deletedCount });
+  } catch (error) {
+    console.error("Bulk delete error:", error);
+    res.status(500).json({ success: false, message: "Bulk delete failed", error });
+  }
+}
+
 
 

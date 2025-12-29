@@ -3,7 +3,11 @@ import React, { useState, useEffect } from "react";
 import { downloadTransactions, getTransactions } from "../api/getTransactions"; // Adjust the path as needed
 import { useUser } from "../Context/UserContext";
 import Loading from "../Components/Loading.jsx";
-import Pagination from "../Components/Pagination.jsx"; // Import the Pagination component
+import axios from '../api/axios';
+import Pagination from "../Components/Pagination.jsx";
+import { updateTransaction, removeTransaction, removeManyTransactions } from "../api/addTransaction";
+import ConfirmDialog from "../Components/ConfirmDialog.jsx";
+import EditTransactionModal from "../Components/EditTransactionModal.jsx";
 
 const Transactions = () => {
   const user = useUser();
@@ -15,6 +19,13 @@ const Transactions = () => {
   const [typeFilter, setTypeFilter] = useState("all"); // all | income | expense
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [transactionToEdit, setTransactionToEdit] = useState(null);
+  const [selectedTransactions, setSelectedTransactions] = useState([]);
+  const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
+
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -76,10 +87,8 @@ const Transactions = () => {
     try {
       const res = await downloadTransactions();
 
-      const blob = new Blob([res.data], {
-        type: "application/pdf",
-      });
-
+      // Create blob and download
+      const blob = new Blob([res.data], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -87,8 +96,75 @@ const Transactions = () => {
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(url); // clean up memory
     } catch (error) {
       console.error("Download failed:", error);
+    }
+  };
+
+  const handleEdit = (transaction) => {
+    setTransactionToEdit(transaction);
+    setEditModalOpen(true);
+  };
+
+  const handleUpdateSuccess = (updatedTransaction) => {
+    setTransactions((prev) =>
+      prev.map((t) => (t._id === updatedTransaction._id ? updatedTransaction : t))
+    );
+  };
+
+  const handleDeleteClick = (transaction) => {
+    setTransactionToDelete(transaction);
+    setConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await removeTransaction(transactionToDelete._id);
+
+      // update UI immediately
+      setTransactions((prev) =>
+        prev.filter((t) => t._id !== transactionToDelete._id)
+      );
+
+      setConfirmOpen(false);
+      setTransactionToDelete(null);
+    } catch (error) {
+      console.error("Delete failed:", error);
+    }
+  };
+
+  const cancelDelete = () => {
+    setConfirmOpen(false);
+    setTransactionToDelete(null);
+  };
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedTransactions(transactions.map((t) => t._id));
+    } else {
+      setSelectedTransactions([]);
+    }
+  };
+
+  const handleSelectOne = (id) => {
+    if (selectedTransactions.includes(id)) {
+      setSelectedTransactions(selectedTransactions.filter((tId) => tId !== id));
+    } else {
+      setSelectedTransactions([...selectedTransactions, id]);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      const res = await removeManyTransactions(selectedTransactions);
+      if (res?.success) {
+        setTransactions((prev) => prev.filter((t) => !selectedTransactions.includes(t._id)));
+        setSelectedTransactions([]);
+        setBulkDeleteConfirmOpen(false);
+      }
+    } catch (error) {
+      console.error("Bulk delete failed:", error);
     }
   };
 
@@ -99,6 +175,7 @@ const Transactions = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 p-4 md:p-12 pb-10">
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold text-slate-800 dark:text-white tracking-tight">Transactions</h2>
@@ -166,28 +243,56 @@ const Transactions = () => {
       </div>
 
       <div className="bg-white dark:bg-slate-800/40 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-3xl overflow-hidden shadow-2xl">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto  scrollbar-hide" >
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700/50">
-                <th className="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</th>
-                <th className="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Category</th>
-                <th className="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">Description</th>
+                <th className="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">
+                  {selectedTransactions.length > 0 ? (
+                    <button
+                      onClick={() => setBulkDeleteConfirmOpen(true)}
+                      className="text-rose-500 hover:text-rose-600 font-bold"
+                    >
+                      Delete ({selectedTransactions.length})
+                    </button>
+                  ) : "Select"}
+                </th>
+                <th className="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">
+                  Date
+                </th>
+                <th className="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">Type</th>
+                <th className="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">Category</th>
+                 <th className="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">Description</th>
                 <th className="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Amount</th>
                 <th className="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">Receipt</th>
+                <th className="py-4 px-6 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/30">
               {currentTransactions.length > 0 ? (
                 currentTransactions.map((transaction) => (
                   <tr
-                    key={transaction.id}
-                    className="group hover:bg-slate-50 dark:hover:bg-slate-700/20 transition-colors duration-200"
+                    key={transaction._id}
+                    className={`group hover:bg-slate-50 dark:hover:bg-slate-700/20 transition-colors duration-200 ${selectedTransactions.includes(transaction._id) ? "bg-rose-50 dark:bg-rose-900/10" : ""
+                      }`}
                   >
-                    <td className="py-4 px-6">
-                      <div className="text-sm font-medium text-slate-600 dark:text-slate-300">{formatDate(transaction.date)}</div>
+                    <td className="py-4 px-6 text-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedTransactions.includes(transaction._id)}
+                        onChange={() => handleSelectOne(transaction._id)}
+                        className="w-4 h-4 rounded border-slate-300 text-rose-500 focus:ring-rose-500"
+                      />
                     </td>
-                    <td className="py-4 px-6">
+                    <td className="py-4 px-6 text-sm font-medium text-slate-600 dark:text-slate-300 text-center">
+                      {new Date(transaction.date).toLocaleDateString()}
+                    </td>
+                    <td className="py-4 px-6 text-center">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                        {transaction.type === "income" ? "Income" : "Expense"}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 text-center">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
                         {transaction.categoryId?.title || "Uncategorized"}
                       </span>
@@ -219,6 +324,28 @@ const Transactions = () => {
                         <span className="text-slate-400 dark:text-slate-600 text-xs">—</span>
                       )}
                     </td>
+                    <td className="py-4 px-6 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => handleEdit(transaction)}
+                          className="inline-flex items-center justify-center p-2 rounded-xl bg-slate-100 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-600/50"
+                          title="Edit Transaction"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteClick(transaction)}
+                          className="inline-flex items-center justify-center p-2 rounded-xl bg-slate-100 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-600/50"
+                          title="Delete Transaction"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               ) : (
@@ -241,6 +368,36 @@ const Transactions = () => {
           onPageChange={handlePageChange}
         />
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmOpen}
+        title="Delete transaction?"
+        message={`Are you sure you want to delete "${transactionToDelete?.description || "this transaction"}"?`}
+        confirmText="Yes, delete"
+        cancelText="Cancel"
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
+
+      <EditTransactionModal
+        isOpen={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setTransactionToEdit(null);
+        }}
+        transaction={transactionToEdit}
+        onUpdateSuccess={handleUpdateSuccess}
+      />
+
+      <ConfirmDialog
+        isOpen={bulkDeleteConfirmOpen}
+        title="Delete transactions?"
+        message={`Are you sure you want to delete ${selectedTransactions.length} selected transactions?`}
+        confirmText="Yes, delete all"
+        cancelText="Cancel"
+        onConfirm={handleBulkDelete}
+        onCancel={() => setBulkDeleteConfirmOpen(false)}
+      />
     </div>
   );
 };

@@ -1,6 +1,7 @@
 # 🚀 Expense Tracker
 
 Welcome to the **Expense Tracker**!  
+Live Demo - https://expense-tracker-drab-sigma-49.vercel.app/
 A smart and intuitive web application designed to help users manage expenses, understand spending habits, and improve financial health using **AI-powered insights**.
 
 Track your income and expenses, view calendar-wise transactions, download detailed reports, and receive personalized financial suggestions — all in one place.

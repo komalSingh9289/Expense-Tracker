@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import AuthRoute from "./routers/auth.routes.js";
 import CategoryRoute from "./routers/categories.routes.js";
 import TransactionRouter from "./routers/transaction.routes.js";
+import AiRoute from "./routers/ai.routes.js";
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ app.use(cookieParser());
 app.use("/", AuthRoute);
 app.use("/categories", CategoryRoute);
 app.use("/transactions", TransactionRouter);
+app.use("/ai", AiRoute);
 
 app.listen(PORT, () => {
   connectDb();

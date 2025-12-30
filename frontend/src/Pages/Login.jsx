@@ -70,9 +70,28 @@ const Login = () => {
 
       <div className="relative w-full max-w-md animate-in fade-in zoom-in duration-500">
         <div className="bg-slate-800/40 backdrop-blur-2xl border border-slate-700/50 p-8 md:p-10 rounded-[2rem] shadow-2xl">
-          <div className="text-center mb-10">
+          <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Welcome Back</h1>
             <p className="text-slate-400 font-medium tracking-tight">Access your personal finance hub</p>
+          </div>
+
+          <div className="mb-8 p-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl flex items-center justify-between group transition-all hover:bg-blue-500/15">
+            <div className="space-y-1">
+              <p className="text-[10px] uppercase tracking-wider font-bold text-blue-400 mb-1">Demo Account</p>
+              <p className="text-sm font-medium text-slate-300">
+                <span className="text-slate-500 mr-2">Email:</span> demo123@gmail.com
+              </p>
+              <p className="text-sm font-medium text-slate-300">
+                <span className="text-slate-500 mr-2">Pass:</span> demo123
+              </p>
+            </div>
+            <button
+              onClick={() => setUser({ email: "demo123@gmail.com", password: "demo123" })}
+              type="button"
+              className="px-4 py-2 bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 text-xs font-bold rounded-xl transition-all border border-blue-500/20 active:scale-95"
+            >
+              Fill Demo
+            </button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">

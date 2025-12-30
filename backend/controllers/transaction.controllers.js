@@ -1,6 +1,7 @@
 import multer from "multer";
 import path from "path";
 import Transaction from "../models/transaction.model.js";
+import User from "../models/user.model.js";
 import PDFDocument from "pdfkit";
 import upload from "../util/multer.js";
 import { uploadToCloudinary } from "../util/uploadToCloudinary.js";
@@ -47,6 +48,9 @@ export const addTransaction = (req, res) => {
       });
 
       const transaction = await newTransaction.save();
+
+      // Update User's lastTransactionChange
+      await User.findByIdAndUpdate(userId, { lastTransactionChange: Date.now() });
 
       res.status(201).json({
         success: true,
@@ -199,6 +203,12 @@ export const updateTransactions = async (req, res) => {
       }
 
       const transaction = await Transaction.findByIdAndUpdate(id, updateData, { new: true }).populate("categoryId", "title");
+
+      // Update User's lastTransactionChange
+      if (transaction) {
+        await User.findByIdAndUpdate(req.user._id, { lastTransactionChange: Date.now() });
+      }
+
       res.status(200).json({ success: true, message: "Transaction updated successfully", transaction });
     } catch (error) {
       console.log(error);
@@ -213,6 +223,12 @@ export const removeTransactions = async (req, res) => {
     const { id } = req.params;
     console.log(id);
     const transaction = await Transaction.findByIdAndDelete(id);
+
+    // Update User's lastTransactionChange
+    if (transaction) {
+      await User.findByIdAndUpdate(req.user._id, { lastTransactionChange: Date.now() });
+    }
+
     res.status(200).json({ success: true, message: "Transaction removed successfully", transaction });
   } catch (error) {
     console.log(error);
@@ -232,6 +248,11 @@ export const removeManyTransactions = async (req, res) => {
       _id: { $in: ids },
       userId: req.user._id // Ensure user can only delete their own transactions
     });
+
+    // Update User's lastTransactionChange
+    if (result.deletedCount > 0) {
+      await User.findByIdAndUpdate(req.user._id, { lastTransactionChange: Date.now() });
+    }
 
     res.status(200).json({ success: true, message: "Transactions deleted successfully", count: result.deletedCount });
   } catch (error) {

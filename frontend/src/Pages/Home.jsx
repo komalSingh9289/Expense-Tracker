@@ -29,26 +29,34 @@ const Home = () => {
               Take control of your financial destiny. Track every rupee, analyze your habits, and reach your goals faster than ever with our intuitive platform.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-              <NavLink 
-                to="/signup" 
+              <NavLink
+                to="/signup"
                 className="w-full sm:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl shadow-xl shadow-blue-900/20 transition-all duration-200 hover:scale-105 active:scale-95 text-center"
               >
-                Start Free Trial
+                Join ExpenseMate
               </NavLink>
-              <NavLink 
-                to="/about" 
+              <NavLink
+                to="/about"
                 className="w-full sm:w-auto px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-2xl border border-slate-700 transition-all duration-200 text-center"
               >
                 Explore Features
               </NavLink>
             </div>
-            
+
             <div className="mt-12 flex items-center justify-center lg:justify-start gap-6">
-              <div className="flex -space-x-3">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="w-10 h-10 rounded-full border-2 border-slate-900 bg-slate-800 flex items-center justify-center text-[10px] font-bold text-white">
-                    {String.fromCharCode(64 + i)}
-                  </div>
+              <div className="flex -space-x-4">
+                {[
+                  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces",
+                  "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop&crop=faces",
+                  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=faces",
+                  "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&h=100&fit=crop&crop=faces"
+                ].map((src, i) => (
+                  <img
+                    key={i}
+                    src={src}
+                    alt={`User ${i + 1}`}
+                    className="w-10 h-10 rounded-full border-2 border-slate-900 object-cover"
+                  />
                 ))}
               </div>
               <p className="text-slate-500 text-sm font-bold">Trusted by 10k+ users</p>
@@ -57,12 +65,12 @@ const Home = () => {
 
           <div className="flex-1 w-full max-w-2xl animate-in slide-in-from-right duration-700 delay-200">
             <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-[2.5rem] blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
-              <div className="relative bg-slate-800/80 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden border border-slate-700/50">
+              <div className="absolute -inset-1  group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+              <div className="relative  overflow-hidden">
                 <img
                   src={expenseMate}
                   alt="Expense Tracker Dashboard"
-                  className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700"
+                  className="w-full h-auto object-cover "
                 />
               </div>
             </div>

@@ -106,7 +106,7 @@ const ExpensePieChart = () => {
     if (!chartData.labels || chartData.labels.length === 0) {
         return (
              <div className="bg-white dark:bg-slate-800/40 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 p-6 md:p-8 rounded-[2rem] shadow-xl transition-colors h-full flex flex-col items-center justify-center min-h-[350px]">
-                <h3 className=" text-lg font-bold text-slate-800 dark:text-white mb-2">Expense Breakdown</h3>
+                <h3 className=" text-lg font-bold text-slate-800 dark:text-white ">Expense Breakdown</h3>
                 <p className="text-slate-500 dark:text-slate-400 text-sm">No expense data available to display.</p>
             </div>
         )

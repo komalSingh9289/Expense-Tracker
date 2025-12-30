@@ -149,7 +149,7 @@ const OverView = () => {
           <RecentTransactions />
           <Calendar transactions={transactions} />
         </div>
-        <div className="h-[80vh]">
+        <div className="h-[60vh]">
           <ExpensePieChart />
         </div>
       </div>

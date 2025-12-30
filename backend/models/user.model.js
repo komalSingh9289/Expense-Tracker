@@ -4,17 +4,27 @@ import bcrypt from "bcryptjs";
 const userSchema = new mongoose.Schema(
   {
     name: {
-      type: String,  
+      type: String,
       required: [true, "Your name is required"],
     },
     email: {
-      type: String,  
+      type: String,
       required: [true, "Your email is required"],
       unique: true,
     },
     password: {
-      type: String, 
+      type: String,
       required: [true, "Your password is required"],
+    },
+    lastInsight: {
+      type: String, // Stores the last generated AI insight
+    },
+    lastInsightDate: {
+      type: Date, // Timestamp of the last insight generation
+    },
+    lastTransactionChange: {
+      type: Date, // Timestamp of the last transaction add/update/delete
+      default: Date.now,
     },
   },
   {

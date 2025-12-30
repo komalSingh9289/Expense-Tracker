@@ -52,7 +52,10 @@ Track your income and expenses, view calendar-wise transactions, download detail
 ---
 
 ## 📸 Demo
-
+<img width="1366" height="768" alt="Image" src="https://github.com/user-attachments/assets/5190c313-eaee-49be-9911-1f54106ee9f3" />
+<img width="1366" height="768" alt="Image" src="https://github.com/user-attachments/assets/886512e0-f828-4072-be60-365a5773e81e" />
+<img width="1366" height="768" alt="Image" src="https://github.com/user-attachments/assets/ba028495-e123-4bf6-becb-1be19aa54af0" />
+<img width="1366" height="768" alt="Image" src="https://github.com/user-attachments/assets/fb68081c-cd39-4690-8bcc-1e864d716288" />
 
 ---
 

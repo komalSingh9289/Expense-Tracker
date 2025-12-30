@@ -23,7 +23,7 @@ const Header = () => {
   };
 
   return (
-    <nav className="bg-white/95 backdrop-blur-md sticky top-0 z-50 text-slate-800 border-b border-slate-200 transition-colors duration-300">
+    <nav className="bg-slate-950/80 backdrop-blur-md sticky top-0 z-50 text-white border-b border-slate-800 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
@@ -35,24 +35,24 @@ const Header = () => {
             <div className="ml-10 flex items-baseline space-x-6">
               <NavLink
                 to="/"
-                className={({ isActive }) => 
-                  `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${isActive ? 'text-blue-600' : 'text-slate-600 hover:text-blue-600 hover:bg-slate-100'}`
+                className={({ isActive }) =>
+                  `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${isActive ? 'text-blue-500' : 'text-gray-300 hover:text-white hover:bg-slate-800'}`
                 }
               >
                 Home
               </NavLink>
               <NavLink
                 to="/about"
-                className={({ isActive }) => 
-                  `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${isActive ? 'text-blue-600' : 'text-slate-600 hover:text-blue-600 hover:bg-slate-100'}`
+                className={({ isActive }) =>
+                  `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${isActive ? 'text-blue-500' : 'text-gray-300 hover:text-white hover:bg-slate-800'}`
                 }
               >
                 About
               </NavLink>
               <NavLink
                 to="/contact"
-                className={({ isActive }) => 
-                  `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${isActive ? 'text-blue-400' : 'text-gray-300 hover:text-white hover:bg-slate-800'}`
+                className={({ isActive }) =>
+                  `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${isActive ? 'text-blue-500' : 'text-gray-300 hover:text-white hover:bg-slate-800'}`
                 }
               >
                 Contact
@@ -62,7 +62,7 @@ const Header = () => {
                 <div className="relative">
                   <button
                     onClick={toggleDropdown}
-                    className="flex items-center px-4 py-2 rounded-full text-sm font-medium bg-slate-800 hover:bg-slate-700 transition-all duration-200 border border-slate-700"
+                    className="flex items-center px-4 py-2 rounded-full text-sm font-medium bg-slate-800 hover:bg-slate-700 transition-all duration-200 border border-slate-700 text-gray-200"
                   >
                     <span className="mr-2">{user.name}</span>
                     <svg
@@ -82,15 +82,15 @@ const Header = () => {
                   </button>
 
                   {dropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl py-2 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                    <div className="absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-2 overflow-hidden animate-in fade-in slide-in-from-top-2">
                       <NavLink
                         to="/dashboard"
                         onClick={() => setDropdownOpen(false)}
-                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white"
+                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-800 hover:text-white"
                       >
                         Dashboard
                       </NavLink>
-                      <div className="h-px bg-slate-700 my-1"></div>
+                      <div className="h-px bg-slate-800 my-1"></div>
                       <Logout />
                     </div>
                   )}
@@ -98,7 +98,7 @@ const Header = () => {
               ) : (
                 <NavLink
                   to="/login"
-                  className="px-6 py-2 rounded-full text-sm font-medium bg-blue-600 hover:bg-blue-500 transition-all duration-200 shadow-lg shadow-blue-900/20"
+                  className="px-6 py-2 rounded-full text-sm font-medium bg-blue-600 hover:bg-blue-500 transition-all duration-200 shadow-lg shadow-blue-900/20 text-white"
                 >
                   Login
                 </NavLink>
@@ -128,9 +128,8 @@ const Header = () => {
 
       {/* Mobile Menu */}
       <div
-        className={`${
-          isOpen ? "max-h-96 opacity-100 py-4" : "max-h-0 opacity-0 py-0"
-        } overflow-hidden transition-all duration-300 ease-in-out md:hidden bg-white border-t border-slate-200`}
+        className={`${isOpen ? "max-h-96 opacity-100 py-4" : "max-h-0 opacity-0 py-0"
+          } overflow-hidden transition-all duration-300 ease-in-out md:hidden bg-slate-950 border-t border-slate-800`}
       >
         <div className="px-4 space-y-2">
           <NavLink

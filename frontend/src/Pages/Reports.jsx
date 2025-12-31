@@ -35,6 +35,10 @@ const Reports = () => {
   const [error, setError] = useState(null);
   const [insight, setInsight] = useState(null);
   const [loadingInsight, setLoadingInsight] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+  });
 
   const [loading, setLoading] = useState(true);
 
@@ -61,9 +65,17 @@ const Reports = () => {
     }
   }, [user]);
 
+  const filteredTransactions = transactions.filter(t => {
+    if (selectedMonth === 'all') return true;
+    const tDate = new Date(t.date);
+    const month = (tDate.getMonth() + 1).toString().padStart(2, '0');
+    const year = tDate.getFullYear();
+    return `${year}-${month}` === selectedMonth;
+  });
+
   const calculateExpensesByTitle = () => {
     const titleData = {};
-    transactions.forEach((transaction) => {
+    filteredTransactions.forEach((transaction) => {
       if (transaction.type === "expense" && transaction.categoryId?.title) {
         const title = transaction.categoryId.title;
         if (!titleData[title]) titleData[title] = 0;
@@ -98,16 +110,46 @@ const Reports = () => {
 
   const prepareLineChartData = () => {
     const dailySpending = {};
-    transactions.forEach((transaction) => {
-      if (transaction.type === "expense") {
-        const date = new Date(transaction.date).toLocaleDateString('en-US', {
-          month: 'short',
-          day: '2-digit',
-        });
-        if (!dailySpending[date]) dailySpending[date] = 0;
-        dailySpending[date] += transaction.amount;
+
+    if (selectedMonth !== 'all') {
+      const [year, month] = selectedMonth.split('-').map(Number);
+      const daysInMonth = new Date(year, month, 0).getDate();
+
+      // Initialize all days of the month with 0
+      for (let i = 1; i <= daysInMonth; i++) {
+        const label = `${new Date(year, month - 1, i).toLocaleString('en-US', { month: 'short' })} ${i.toString().padStart(2, '0')}`;
+        dailySpending[label] = 0;
       }
-    });
+
+      filteredTransactions.forEach((transaction) => {
+        if (transaction.type === "expense") {
+          const date = new Date(transaction.date);
+          const label = `${date.toLocaleString('en-US', { month: 'short' })} ${date.getDate().toString().padStart(2, '0')}`;
+          if (dailySpending.hasOwnProperty(label)) {
+            dailySpending[label] += transaction.amount;
+          }
+        }
+      });
+    } else {
+      // For 'All Time', group by unique dates and sort them
+      const tempSpending = {};
+      transactions.forEach((transaction) => {
+        if (transaction.type === "expense") {
+          const date = new Date(transaction.date);
+          const dateStr = date.toISOString().split('T')[0];
+          if (!tempSpending[dateStr]) tempSpending[dateStr] = 0;
+          tempSpending[dateStr] += transaction.amount;
+        }
+      });
+
+      // Sort dates
+      const sortedDates = Object.keys(tempSpending).sort();
+      sortedDates.forEach(dateStr => {
+        const date = new Date(dateStr);
+        const label = `${date.toLocaleString('en-US', { month: 'short' })} ${date.getDate().toString().padStart(2, '0')}`;
+        dailySpending[label] = tempSpending[dateStr];
+      });
+    }
 
     return {
       labels: Object.keys(dailySpending),
@@ -238,13 +280,40 @@ const Reports = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 p-12">
-      <header>
-        <h2 className="text-3xl font-bold text-slate-800 dark:text-white tracking-tight">
-          Reports & Analytics
-        </h2>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">
-          Visual insights into your financial habits and spending patterns.
-        </p>
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h2 className="text-4xl font-extrabold text-slate-800 dark:text-white tracking-tight">
+            Reports & Analytics
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg">
+            Visual insights into your financial habits and spending patterns.
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="relative group">
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="appearance-none bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl px-6 py-3 pr-12 text-slate-700 dark:text-slate-200 font-bold focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer shadow-sm hover:border-slate-300 dark:hover:border-slate-600"
+            >
+              <option value="all">All Time History</option>
+              {(() => {
+                const months = [];
+                const now = new Date();
+                for (let i = 0; i < 12; i++) {
+                  const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                  const val = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+                  const label = d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+                  months.push(<option key={val} value={val}>{label}</option>);
+                }
+                return months;
+              })()}
+            </select>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+          </div>
+        </div>
       </header>
 
       {error && (

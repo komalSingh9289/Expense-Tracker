@@ -5,14 +5,23 @@ const categorySchema = new mongoose.Schema(
     title: {
       type: String,
       required: true,
-      unique: true,
+      trim: true,
     },
     sourceType: {
       type: String,
       required: true,
-      default: "Other",
+      enum: ["Income", "Expense"],
+      default: "Expense",
     },
-
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Users",
+      default: null,
+    },
+    isPredefined: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

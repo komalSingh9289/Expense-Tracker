@@ -95,7 +95,7 @@ const OverView = () => {
             Dashboard Overview
           </h2>
           <p className="text-slate-500 dark:text-slate-400 mt-1">
-            Welcome back, {user.name}. Here's what's happening with your money.
+            Welcome back, {user?.name}. Here's what's happening with your money.
           </p>
         </div>
         <div className="flex items-center gap-3">

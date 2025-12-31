@@ -11,7 +11,7 @@ export const getFinancialInsight = async (req, res) => {
         // If user has an insight, and the insight was generated AFTER the last transaction change
         if (user.lastInsight && user.lastInsightDate && user.lastTransactionChange) {
             if (user.lastInsightDate > user.lastTransactionChange) {
-               
+
                 return res.status(200).json({ success: true, insight: user.lastInsight, type: "cached" });
             }
         } else if (user.lastInsight && user.lastInsightDate && !user.lastTransactionChange) {
@@ -85,18 +85,18 @@ Rules:
 
         // 4. Call Gemini API
         const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-        const model = 'gemini-3-flash-preview'; // switch to stable model
+        const model = 'gemini-1.5-flash'; // use stable model
         const response = await ai.models.generateContent({
             model: model,
             contents: [{ role: 'user', parts: [{ text: promptText }] }],
         });
-      
+
 
         const insightText =
             response?.candidates?.[0]?.content?.parts?.[0]?.text
             || "Unable to generate insight at the moment.";
 
-       
+
 
         // 5. Update Cache
         user.lastInsight = insightText;
@@ -108,7 +108,7 @@ Rules:
     } catch (error) {
         // console.error("Error generating AI insight:", error);
 
-        
+
         if (error.status === 429) {
             return res.status(429).json({ success: false, message: "AI service is busy. Please try again later." });
         }

@@ -273,22 +273,9 @@ export const getTransactionsByDate = async (req, res) => {
 
     console.log("Received Date Query:", date);
 
-    // Parse YYYY-MM-DD
-    const [year, month, day] = date.split('-').map(Number);
-    // Create start and end using local server time assumption for now (since user is local)
-    // Or better: construct UTC range if we want strictness, but for a simple app matching 
-    // "what the user sees" (local) to "what the database has" (timestamps), 
-    // we need to cover the whole 24h of that day.
-
-    // Construct Date objects for the start and end of that specific calendar day
-    // We treat the input date as the "day" we want to find transactions for.
-    // If date is "2024-12-29", we want 2024-12-29 00:00:00 to 2024-12-29 23:59:59.999
-
-    // Using a simplistic approach:
+    // Construct Date objects for the start and end of that specific calendar day in UTC
     const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
     const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
-
-    console.log("Query Range:", startOfDay, "to", endOfDay);
 
     const transactions = await Transaction.find({
       userId,

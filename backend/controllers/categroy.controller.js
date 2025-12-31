@@ -1,25 +1,70 @@
-import mongoose from "mongoose";
 import Category from "../models/category.model.js";
 
-export const addCategory = async (req, res) => {
-  const { title, sourcesourceType } = req.body;
+// Helper function to calculate similarity (Levenshtein distance)
+const getSimilarity = (s1, s2) => {
+  s1 = s1.toLowerCase();
+  s2 = s2.toLowerCase();
+  const costs = [];
+  for (let i = 0; i <= s1.length; i++) {
+    let lastValue = i;
+    for (let j = 0; j <= s2.length; j++) {
+      if (i === 0) costs[j] = j;
+      else {
+        if (j > 0) {
+          let newValue = costs[j - 1];
+          if (s1.charAt(i - 1) !== s2.charAt(j - 1))
+            newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+          costs[j - 1] = lastValue;
+          lastValue = newValue;
+        }
+      }
+    }
+    if (i > 0) costs[s2.length] = lastValue;
+  }
+  return costs[s2.length];
+};
 
-  // Check if title is provided
-  if (!title || !sourcesourceType) {
-    return res
-      .status(404)
-      .json({ success: false, message: "All fields are required!" });
+export const addCategory = async (req, res) => {
+  const { title, sourceType } = req.body;
+  const userId = req.user._id;
+
+  if (!title || !sourceType) {
+    return res.status(400).json({ success: false, message: "All fields are required!" });
+  }
+
+  if (title.length > 20) {
+    return res.status(400).json({ success: false, message: "Category title must be 20 characters or less." });
   }
 
   try {
-    const existsCat = await Category.findOne({ title });
-    if (existsCat) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Category already exists!" });
+    // Check for exact duplicate in predefined or user's categories
+    const exactMatch = await Category.findOne({
+      title: { $regex: new RegExp(`^${title}$`, "i") },
+      $or: [{ isPredefined: true }, { userId }],
+    });
+
+    if (exactMatch) {
+      return res.status(400).json({ success: false, message: "Category already exists!" });
     }
 
-    const category = await Category.create({ title, sourcesourceType });
+    // Similarity Check
+    const allVisibleCategories = await Category.find({
+      $or: [{ isPredefined: true }, { userId }],
+      sourceType
+    });
+
+    for (const cat of allVisibleCategories) {
+      const distance = getSimilarity(title, cat.title);
+      // If distance is small (e.g., 1 or 2 depending on length), suggest existing
+      if (distance > 0 && distance <= 2) {
+        return res.status(400).json({
+          success: false,
+          message: `Category is too similar to existing one: "${cat.title}". Please select that instead.`
+        });
+      }
+    }
+
+    const category = await Category.create({ title, sourceType, userId });
     return res.status(201).json({
       success: true,
       message: "Category added successfully",
@@ -27,21 +72,19 @@ export const addCategory = async (req, res) => {
     });
   } catch (error) {
     console.log("Category creation error", error);
-    return res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
 export const getCategories = async (req, res) => {
   try {
-    const categories = await Category.find();
-    if (!categories || categories.length === 0) {
-      return res
-        .status(404)
-        .json({ success: false, message: "All fields are required!" });
-    }
+    const userId = req.user._id;
+    const categories = await Category.find({
+      $or: [{ isPredefined: true }, { userId }],
+    });
 
     return res.status(200).json({
-      success: false,
+      success: true,
       message: "Categories retrieved successfully",
       categories,
     });
@@ -52,48 +95,37 @@ export const getCategories = async (req, res) => {
 };
 
 export const updateCat = async (req, res) => {
-  const { id } = req.params; // Get the category ID from the URL parameters
-  const { title, sourceType } = req.body; // Get the updated title and sourceType from the request body
+  const { id } = req.params;
+  const { title, sourceType } = req.body;
+  const userId = req.user._id;
 
-  // Validate input fields
   if (!title || !sourceType) {
-    return res.status(400).json({
-      success: false,
-      message: "Title and sourceType are required.",
-    });
-  }
-
-  // Validate 'sourceType' field (must be 'income' or 'expense')
-  if (sourceType !== "Income" && sourceType !== "Expense") {
-    return res.status(400).json({
-      success: false,
-      message: "sourceType must be either 'income' or 'expense'.",
-    });
+    return res.status(400).json({ success: false, message: "Title and sourceType are required." });
   }
 
   try {
-    // Check if the category exists by ID
     const category = await Category.findById(id);
     if (!category) {
-      return res.status(404).json({
-        success: false,
-        message: "Category not found.",
-      });
+      return res.status(404).json({ success: false, message: "Category not found." });
     }
 
-    // Check if another category with the same title already exists
-    const categoryExists = await Category.findOne({ title });
-    if (categoryExists && categoryExists._id.toString() !== id) {
-      return res.status(400).json({
-        success: false,
-        message: "A category with this title already exists.",
-      });
+    if (category.isPredefined || (category.userId && category.userId.toString() !== userId.toString())) {
+      return res.status(403).json({ success: false, message: "You can only update categories created by you." });
     }
 
-    // Update the category fields
+    // Check for duplicate title
+    const categoryExists = await Category.findOne({
+      title: { $regex: new RegExp(`^${title}$`, "i") },
+      $or: [{ isPredefined: true }, { userId }],
+      _id: { $ne: id }
+    });
+    if (categoryExists) {
+      return res.status(400).json({ success: false, message: "A category with this title already exists." });
+    }
+
     category.title = title;
     category.sourceType = sourceType;
-    await category.save(); // Save the updated category
+    await category.save();
 
     return res.status(200).json({
       success: true,
@@ -102,40 +134,48 @@ export const updateCat = async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating category:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error. Please try again later.",
-    });
+    return res.status(500).json({ success: false, message: "Server error." });
+  }
+};
+
+export const deleteCategory = async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user._id;
+
+  try {
+    const category = await Category.findById(id);
+    if (!category) {
+      return res.status(404).json({ success: false, message: "Category not found." });
+    }
+
+    if (category.isPredefined || (category.userId && category.userId.toString() !== userId.toString())) {
+      return res.status(403).json({ success: false, message: "You can only delete categories created by you." });
+    }
+
+    await Category.findByIdAndDelete(id);
+    return res.status(200).json({ success: true, message: "Category deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting category:", error);
+    return res.status(500).json({ success: false, message: "Server error." });
   }
 };
 
 export const getCatByType = async (req, res) => {
-  const { type } = req.params; // Extract sourceType from request params
+  const { type } = req.params;
+  const userId = req.user._id;
 
   try {
-    // Fetch categories from the database where sourceType matches the parameter
-    const categories = await Category.find({ sourceType: type });
+    const categories = await Category.find({
+      sourceType: type,
+      $or: [{ isPredefined: true }, { userId }]
+    });
 
-    if (categories.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "No categories found for the provided type!",
-      });
-    }
-
-    // Return categories if found
     return res.status(200).json({
       success: true,
       categories,
     });
-
   } catch (error) {
     console.error("Error fetching categories by type:", error);
-    
-    // Return a 500 error if something goes wrong
-    return res.status(500).json({
-      success: false,
-      message: "Server error. Please try again later.",
-    });
+    return res.status(500).json({ success: false, message: "Server error." });
   }
 };

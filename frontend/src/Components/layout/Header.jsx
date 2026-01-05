@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../Context/auth";
+import axios from "../../api/axios";
 import Logout from "../Logout.jsx";
 
 const Header = () => {
-  const { user, logout } = useAuth();
+  const { user, setUser } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
@@ -17,9 +18,16 @@ const Header = () => {
     setDropdownOpen(!dropdownOpen);
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      await axios.post("/logout", null);
+      setUser(null);
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      setUser(null);
+      navigate("/login");
+    }
   };
 
   return (

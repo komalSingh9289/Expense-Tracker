@@ -274,8 +274,13 @@ export const getTransactionsByDate = async (req, res) => {
     console.log("Received Date Query:", date);
 
     // Construct Date objects for the start and end of that specific calendar day in UTC
-    const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
-    const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
+    const queryDate = new Date(date);
+    const year = queryDate.getFullYear();
+    const month = queryDate.getMonth();
+    const day = queryDate.getDate();
+
+    const startOfDay = new Date(year, month, day, 0, 0, 0, 0);
+    const endOfDay = new Date(year, month, day, 23, 59, 59, 999);
 
     const transactions = await Transaction.find({
       userId,

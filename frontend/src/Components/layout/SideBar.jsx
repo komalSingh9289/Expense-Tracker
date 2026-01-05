@@ -4,6 +4,8 @@ import { FaChartPie, FaDollarSign, FaClipboardList, FaCog } from 'react-icons/fa
 import { FiLogOut } from "react-icons/fi";
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useUser } from '../../Context/UserContext';
+import { useAuth } from "../../Context/auth";
+import axios from "../../api/axios";
 import { Navigate } from 'react-router-dom';
 
 const Sidebar = () => {
@@ -43,20 +45,33 @@ const Sidebar = () => {
         { path: "/dashboard/wallet", label: "Wallet", icon: <FaClipboardList className="h-5 w-5" /> },
         { path: "/dashboard/report", label: "Reports", icon: <FaChartPie className="h-5 w-5" /> },
         { path: "/dashboard/settings", label: "Settings", icon: <FaCog className="h-5 w-5" /> },
-       
+
     ];
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        navigate("/login");
+    const { setUser } = useAuth();
+
+    const handleLogout = async () => {
+        try {
+            await axios.post("/logout", null);
+            setUser(null);
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            navigate("/login");
+        } catch (error) {
+            console.error("Logout failed:", error);
+            // Even if API fails, clear local state
+            setUser(null);
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            navigate("/login");
+        }
     };
 
     return (
         <div className="relative z-40">
             {/* Overlay for mobile */}
             {isOpen && (
-                <div 
+                <div
                     className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm md:hidden transition-opacity duration-300"
                     onClick={toggleSidebar}
                 ></div>
@@ -65,9 +80,8 @@ const Sidebar = () => {
             {/* Sidebar */}
             <aside
                 ref={sidebarRef}
-                className={`fixed inset-y-0 left-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white w-64 h-full transition-all duration-300 ease-in-out transform ${
-                    isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0 md:static'
-                } z-50 flex flex-col`}
+                className={`fixed inset-y-0 left-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white w-64 h-full transition-all duration-300 ease-in-out transform ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0 md:static'
+                    } z-50 flex flex-col`}
             >
                 <div className="p-6 border-b border-slate-800 flex items-center justify-between">
                     <NavLink to="/" className="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
@@ -89,9 +103,8 @@ const Sidebar = () => {
                             onClick={handleLinkClick}
                             end={item.path === "/dashboard"}
                             className={({ isActive }) =>
-                                `flex items-center p-3 rounded-xl transition-all duration-200 group ${
-                                    isActive 
-                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' 
+                                `flex items-center p-3 rounded-xl transition-all duration-200 group ${isActive
+                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40'
                                     : 'text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-white'
                                 }`
                             }
@@ -101,15 +114,15 @@ const Sidebar = () => {
                         </NavLink>
                     ))}
                     {/* logout function  */}
-                   <button
-  onClick={handleLogout}
-  className="flex items-center w-full p-3 rounded-xl transition-all duration-200 group text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-white"
->
-  <span className="mr-3 transition-transform group-hover:scale-110">
-    <FiLogOut className="h-5 w-5" />
-  </span>
-  <span className="font-medium">Logout</span>
-</button>
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center w-full p-3 rounded-xl transition-all duration-200 group text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-white"
+                    >
+                        <span className="mr-3 transition-transform group-hover:scale-110">
+                            <FiLogOut className="h-5 w-5" />
+                        </span>
+                        <span className="font-medium">Logout</span>
+                    </button>
 
                 </nav>
 
@@ -129,9 +142,8 @@ const Sidebar = () => {
             {/* Mobile Toggle Button */}
             <button
                 onClick={toggleSidebar}
-                className={`md:hidden p-3 bg-white dark:bg-slate-900 text-slate-800 dark:text-white rounded-xl fixed bottom-6 right-6 shadow-2xl border border-slate-200 dark:border-slate-800 transition-transform hover:scale-110 active:scale-95 ${
-                    isOpen ? 'scale-0' : 'scale-100'
-                }`}
+                className={`md:hidden p-3 bg-white dark:bg-slate-900 text-slate-800 dark:text-white rounded-xl fixed bottom-6 right-6 shadow-2xl border border-slate-200 dark:border-slate-800 transition-transform hover:scale-110 active:scale-95 ${isOpen ? 'scale-0' : 'scale-100'
+                    }`}
             >
                 <AiOutlineMenu className="h-6 w-6" />
             </button>

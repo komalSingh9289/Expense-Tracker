@@ -43,10 +43,15 @@ const Calendar = ({ transactions }) => {
     // Check if a specific date has expenses using the transactions prop (for indicators)
     const hasExpense = (date) => {
         if (!date || !transactions) return false;
-        const targetDate = date.toISOString().split('T')[0];
+        const dYear = date.getFullYear();
+        const dMonth = date.getMonth();
+        const dDate = date.getDate();
+
         return transactions.some(t => {
-            const tDate = new Date(t.date).toISOString().split('T')[0];
-            return tDate === targetDate;
+            const tDateObj = new Date(t.date);
+            return tDateObj.getFullYear() === dYear &&
+                tDateObj.getMonth() === dMonth &&
+                tDateObj.getDate() === dDate;
         });
     };
 

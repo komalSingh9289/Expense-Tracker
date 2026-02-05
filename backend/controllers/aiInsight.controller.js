@@ -7,8 +7,7 @@ export const getFinancialInsight = async (req, res) => {
         const userId = req.user._id;
         const user = await User.findById(userId);
 
-        // 1. Check Cache
-        // If user has an insight, and the insight was generated AFTER the last transaction change
+        
         if (user.lastInsight && user.lastInsightDate && user.lastTransactionChange) {
             if (user.lastInsightDate > user.lastTransactionChange) {
 
@@ -16,7 +15,6 @@ export const getFinancialInsight = async (req, res) => {
             }
         } else if (user.lastInsight && user.lastInsightDate && !user.lastTransactionChange) {
             // Fallback: If lastTransactionChange is missing (old users), use 1 hour cache or force update
-            // Let's assume force update for safety or stick to 1 hour
             const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
             if (user.lastInsightDate > oneHourAgo) {
                 return res.status(200).json({ success: true, insight: user.lastInsight, type: "cached-time" });
@@ -84,16 +82,19 @@ Rules:
         console.log("Generating new AI insight...");
 
         // 4. Call Gemini API
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-        const model = 'gemini-1.5-flash'; // use stable model
+        const ai = new GoogleGenAI({
+            apiKey: process.env.GEMINI_API_KEY,
+            apiVersion: "v1",
+        });
+        const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
         const response = await ai.models.generateContent({
             model: model,
-            contents: [{ role: 'user', parts: [{ text: promptText }] }],
+            contents: promptText,
         });
 
-
         const insightText =
-            response?.candidates?.[0]?.content?.parts?.[0]?.text
+            response?.text
+            || response?.candidates?.[0]?.content?.parts?.[0]?.text
             || "Unable to generate insight at the moment.";
 
 
@@ -106,7 +107,7 @@ Rules:
         res.status(200).json({ success: true, insight: insightText, type: "fresh" });
 
     } catch (error) {
-        // console.error("Error generating AI insight:", error);
+        console.error("Error generating AI insight:", error);
 
 
         if (error.status === 429) {

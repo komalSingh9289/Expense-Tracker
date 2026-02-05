@@ -34,6 +34,7 @@ const Reports = () => {
   const [transactions, setTransactions] = useState([]);
   const [error, setError] = useState(null);
   const [insight, setInsight] = useState(null);
+  const [insightError, setInsightError] = useState(null);
   const [loadingInsight, setLoadingInsight] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
@@ -173,14 +174,19 @@ const Reports = () => {
 
   const handleGenerateInsight = async () => {
     setLoadingInsight(true);
+    setInsightError(null);
     try {
       const res = await getFinancialInsight();
-      if (res.success) {
+      if (res?.success && res?.insight) {
         setInsight(res.insight);
+      } else {
+        setInsight(null);
+        setInsightError(res?.message || "No insight returned. Please try again.");
       }
     } catch (err) {
       console.error("Failed to generate insight:", err);
-      // Optional: set a separate UI error state for insights
+      setInsight(null);
+      setInsightError("Failed to generate insight. Please try again.");
     } finally {
       setLoadingInsight(false);
     }
@@ -374,6 +380,12 @@ const Reports = () => {
             )}
           </button>
         </div>
+
+        {insightError && (
+          <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-rose-600 text-sm">
+            {insightError}
+          </div>
+        )}
 
         {insight ? (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
